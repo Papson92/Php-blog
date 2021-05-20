@@ -2,7 +2,7 @@
 require __DIR__ . '/partials/themeStart.php';
 
 // On se connécte à la base de données
-$pdo = new PDO('mysql:dbname=php-poo-blog;host=mysql', 'root', 'root');
+$pdo = new PDO('mysql:dbname=php-poo-blog;host=localhost', 'root');
 
 // On créé une requète SQL pour récupérer tout les articles
 $sql = 'SELECT * FROM articles ORDER BY id DESC';

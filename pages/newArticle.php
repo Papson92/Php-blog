@@ -5,7 +5,7 @@ $success = false;
 
 if (!empty($_POST)) {
     // ETAPE 1 : Se connécter à la base de données
-    $pdo = new PDO('mysql:dbname=php-poo-blog;host=mysql', 'root', 'root');
+    $pdo = new PDO('mysql:dbname=php-poo-blog;host=localhost', 'root');
 
     // ETAPE 2 : Récupérer les données du formulaire
     $title = $_POST['title'];

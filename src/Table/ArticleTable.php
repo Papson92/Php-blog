@@ -3,6 +3,7 @@
 namespace Table;
 
 use PDO;
+use Exception;
 
 /**
  * Cette class permet de récupérer ainsi que de créer des articles
@@ -29,7 +30,19 @@ class ArticleTable
      */
     public function findAll(): array
     {
-        return [];
+        // On créé une requète SQL pour récupérer tout les articles
+        $sql = 'SELECT * FROM articles ORDER BY id DESC';
+
+        // On prépare notre requète SQL
+        $request = $this->pdo->prepare($sql);
+
+        // On éxecute la requète
+        $request->execute();
+
+        // On récupére tout les articles
+        $articles = $request->fetchAll();
+
+        return $articles;
     }
 
     /**
@@ -37,7 +50,24 @@ class ArticleTable
      */
     public function findOne(int $id): array
     {
-        return [];
+        // On créé une requète SQL qui nous permet de récupérer un seul
+        // depuis la base de données
+        $sql = 'SELECT * FROM articles WHERE id = ?';
+
+        // On prépare notre requète SQL
+        $request = $this->pdo->prepare($sql);
+
+        // On éxecute la requète
+        $request->execute([$id]);
+
+        // On récupére un seul article !
+        $article = $request->fetch(PDO::FETCH_ASSOC);
+
+        if (empty($article)) {
+            throw new Exception('Article not found');
+        }
+
+        return $article;
     }
 
     /**
@@ -46,7 +76,7 @@ class ArticleTable
     public function createOne(
         string $title,
         string $description,
-        string $content,
+        string $content
     ): void {
     }
 }

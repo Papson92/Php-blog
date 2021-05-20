@@ -1,62 +1,97 @@
 <?php
-require __DIR__ . '/partials/themeStart.php';
 
-$success = false;
+namespace Table;
 
-if (!empty($_POST)) {
-    // ETAPE 1 : Se connécter à la base de données
-    $pdo = new PDO('mysql:dbname=php-poo-blog;host=localhost', 'root');
+use PDO;
+use Exception;
 
-    // ETAPE 2 : Récupérer les données du formulaire
-    $title = $_POST['title'];
-    $description = $_POST['description'];
-    $content = $_POST['content'];
+/**
+ * Cette class permet de récupérer ainsi que de créer des articles
+ */
+class ArticleTable
+{
+    /**
+     * On définie un attribut (une variable dans une class)
+     * privée pour stocker un objet PDO.
+     */
+    private PDO $pdo;
 
-    // ETAPE 3 : Création de la requète SQL.
-    // Attention à ne pas concaténer les valeurs
-    // diréctement mais à plutôt utiliser des ?
-    $sql = 'INSERT INTO articles (title, description, content) VALUES (?, ?, ?)';
+    /**
+     * On définie un constructeur qui recoie un objet PDO
+     */
+    public function __construct(PDO $pdo)
+    {
+        $this->pdo = $pdo;
+    }
 
-    // ETAPE 4 : Nous préparons la requète SQL et nous récupérons une requète
-    $request = $pdo->prepare($sql);
+    /**
+     * Cette méthode permet de récupérer l'intégralité des articles
+     * de la base de données
+     */
+    public function findAll(): array
+    {
+        // On créé une requète SQL pour récupérer tout les articles
+        $sql = 'SELECT * FROM articles ORDER BY id DESC';
 
-    // ETAPE 5 : Envoyer ma requète à la base de données. C'est cette commande
-    // qui enregistre l'article dans la base.
-    $request->execute([
-        $title,
-        $description,
-        $content,
-    ]);
+        // On prépare notre requète SQL
+        $request = $this->pdo->prepare($sql);
 
-    $success = true;
+        // On éxecute la requète
+        $request->execute();
+
+        // On récupére tout les articles
+        $articles = $request->fetchAll();
+
+        return $articles;
+    }
+
+    /**
+     * Cette méthode permet de récupérer qu'un seul article !
+     */
+    public function findOne(int $id): array
+    {
+        // On créé une requète SQL qui nous permet de récupérer un seul
+        // depuis la base de données
+        $sql = 'SELECT * FROM articles WHERE id = ?';
+
+        // On prépare notre requète SQL
+        $request = $this->pdo->prepare($sql);
+
+        // On éxecute la requète
+        $request->execute([$id]);
+
+        // On récupére un seul article !
+        $article = $request->fetch(PDO::FETCH_ASSOC);
+
+        if (empty($article)) {
+            throw new Exception('Article not found');
+        }
+
+        return $article;
+    }
+
+    /**
+     * Cette méthode permet de créer un nouvel article
+     */
+    public function createOne(
+        string $title,
+        string $description,
+        string $content
+    ): void {
+        // ETAPE 3 : Création de la requète SQL.
+        // Attention à ne pas concaténer les valeurs
+        // diréctement mais à plutôt utiliser des ?
+        $sql = 'INSERT INTO articles (title, description, content) VALUES (?, ?, ?)';
+
+        // ETAPE 4 : Nous préparons la requète SQL et nous récupérons une requète
+        $request = $this->pdo->prepare($sql);
+
+        // ETAPE 5 : Envoyer ma requète à la base de données. C'est cette commande
+        // qui enregistre l'article dans la base.
+        $request->execute([
+            $title,
+            $description,
+            $content,
+        ]);
+    }
 }
-
-?>
-
-<h1>Page de création d'un article</h1>
-
-<? if ($success) : ?>
-    <div class="alert alert-success" role="alert">
-        L'article a bien été créé
-    </div>
-<? endif; ?>
-
-<form method="POST" action="./index.php?page=newArticle">
-    <div class="mb-3">
-        <label for="title" class="form-label">Titre de l'article</label>
-        <input type="text" class="form-control" id="title" name="title">
-    </div>
-    <div class="mb-3">
-        <label for="description" class="form-label">Description de l'article</label>
-        <textarea class="form-control" id="description" name="description"></textarea>
-    </div>
-    <div class="mb-3">
-        <label for="content" class="form-label">Contenue de l'article</label>
-        <textarea class="form-control" id="content" name="content"></textarea>
-    </div>
-    <button type="submit" class="btn btn-primary">Créer</button>
-</form>
-
-<?
-require __DIR__ . '/partials/themeEnd.php';
-?>

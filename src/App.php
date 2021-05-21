@@ -16,7 +16,7 @@ class App
     {
         // Nous créons une connexion à la base de données en utilisant
         // la class PDO
-        $pdo = new PDO('mysql:dbname=php-poo-blog;host=mysql', 'root', 'root');
+        $pdo = new PDO('mysql:dbname=php-poo-blog;host=localhost', 'root');
         // Nous créons une instance de ArticleTable : $articleTable. Cette objet
         // nous permet de récupérer / créer des articles.
         $articleTable = new ArticleTable($pdo);
@@ -36,32 +36,19 @@ class App
             $pageName = $_GET['page'];
         }
 
-        // file_exists('/chemin/vers/le/fichier.php') retourne true
-        // si le fichier existe, false sinon.
+        // Ici on déduit le nom de la class controller à instancier
+        $controllerClassName = 'Controller\\' . ucfirst($pageName) . 'Controller';
 
-        // ETAPE 2 : Nous affichons la page demandée
+        if (file_exists(__DIR__ . '/' . str_replace('\\', '/', $controllerClassName) . '.php')) {
+            // Maintenant que l'on a la class, nous pouvons l'instancier
+            $controller = new $controllerClassName($articleTable);
 
-        $pagePath = __DIR__ . '/../pages/' . $pageName . '.php';
-
-        // ob_start démarre l'enregistrement de tout les "echo"
-        // qui peuvent subvenir !
-        ob_start();
-
-        if (file_exists($pagePath)) {
-            try {
-                require $pagePath;
-            } catch (Exception $exception) {
-                // ob_clean, permet de vider tous ce qui a été
-                // echo
-                ob_clean();
-                require __DIR__ . '/../pages/notFound.php';
-            }
+            // Nous affichons la page du controller
+            $controller->display();
         } else {
-            require __DIR__ . '/../pages/notFound.php';
-        }
+            $controller = new Controller\NotFoundController($articleTable);
 
-        // ob_get_clean permet de récupérer tout ce qui a été echo
-        // dans une variable
-        echo ob_get_clean();
+            $controller->display();
+        }
     }
 }
